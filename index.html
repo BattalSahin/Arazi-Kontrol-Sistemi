@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Uydu GPS Pro — Giriş Portalı</title>
+
+  <!-- Font Awesome 6.5.2 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+
+  <style>
+    :root {
+      --c-bg:        #080c14;
+      --c-surface:   rgba(17, 24, 39, 0.75);
+      --c-surface2:  rgba(26, 36, 56, 0.85);
+      --c-border:    rgba(255, 255, 255, 0.12);
+      --c-text:      #f0f6fc;
+      --c-muted:     #8b949e;
+      --c-blue:      #2f81f7;
+      --c-blue-glow: rgba(47, 129, 247, 0.5);
+      --c-green:     #3fb950;
+      --c-gold:      #ffb800;
+      --c-gold-glow: rgba(255, 184, 0, 0.45);
+      --blur:        blur(20px);
+      --r:           18px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      width: 100%;
+      min-height: 100%;
+      background: var(--c-bg);
+      color: var(--c-text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* ── ARKA PLAN IŞIK & UYDU EFEKTİ ── */
+    .bg-glow-1 {
+      position: fixed;
+      top: -150px;
+      right: -100px;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(47, 129, 247, 0.18) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .bg-glow-2 {
+      position: fixed;
+      bottom: -150px;
+      left: -100px;
+      width: 550px;
+      height: 550px;
+      background: radial-gradient(circle, rgba(255, 184, 0, 0.12) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── DÜZEN ── */
+    .portal-container {
+      position: relative;
+      z-index: 1;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: calc(24px + env(safe-area-inset-top, 0px)) 20px calc(40px + env(safe-area-inset-bottom, 0px));
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+      min-height: 100vh;
+      justify-content: center;
+    }
+
+    /* ── HERO ALANI ── */
+    .hero-card {
+      background: var(--c-surface);
+      backdrop-filter: var(--blur);
+      -webkit-backdrop-filter: var(--blur);
+      border: 1px solid var(--c-border);
+      border-radius: 28px;
+      padding: 44px 32px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 10%;
+      right: 10%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+    }
+
+    .badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      border-radius: 20px;
+      background: rgba(47, 129, 247, 0.15);
+      border: 1px solid rgba(47, 129, 247, 0.35);
+      color: #79c0ff;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .hero-icon-orbit {
+      width: 90px;
+      height: 90px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(47, 129, 247, 0.25), rgba(255, 184, 0, 0.25));
+      border: 2px solid rgba(255, 255, 255, 0.18);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 38px;
+      color: #fff;
+      box-shadow: 0 0 30px rgba(47, 129, 247, 0.35);
+      animation: floatOrbit 4s ease-in-out infinite;
+    }
+
+    @keyframes floatOrbit {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+    .hero-title {
+      font-size: clamp(26px, 5.5vw, 42px);
+      font-weight: 800;
+      line-height: 1.25;
+      letter-spacing: -0.5px;
+      background: linear-gradient(180deg, #ffffff 30%, #a5b4fc 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-subtitle {
+      font-size: clamp(14px, 3.2vw, 16px);
+      color: var(--c-muted);
+      line-height: 1.65;
+      max-width: 620px;
+    }
+
+    /* ── ANA BUTON: UYDU SAYFASINA GİT ── */
+    .cta-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      background: linear-gradient(135deg, #2f81f7 0%, #1754aa 100%);
+      color: #ffffff;
+      text-decoration: none;
+      font-size: 17px;
+      font-weight: 800;
+      padding: 18px 38px;
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      box-shadow: 0 8px 30px var(--c-blue-glow), 0 2px 8px rgba(0, 0, 0, 0.4);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      cursor: pointer;
+      width: 100%;
+      max-width: 380px;
+    }
+
+    .cta-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgba(47, 129, 247, 0.7);
+    }
+
+    .cta-btn:active {
+      transform: scale(0.97);
+    }
+
+    .cta-btn i {
+      font-size: 20px;
+    }
+
+    /* ── SİSTEM HAZIRLIK KONTROLÜ ── */
+    .system-status-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      width: 100%;
+    }
+
+    .status-card {
+      background: var(--c-surface);
+      backdrop-filter: var(--blur);
+      -webkit-backdrop-filter: var(--blur);
+      border: 1px solid var(--c-border);
+      border-radius: 16px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .status-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.06);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      color: var(--c-blue);
+      flex-shrink: 0;
+    }
+
+    .status-info {
+      min-width: 0;
+    }
+
+    .status-name {
+      font-size: 11px;
+      color: var(--c-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 600;
+    }
+
+    .status-val {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--c-green);
+      margin-top: 2px;
+    }
+
+    /* ── ÖZELLİK KARTLARI ── */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 16px;
+    }
+
+    .feature-card {
+      background: var(--c-surface);
+      backdrop-filter: var(--blur);
+      -webkit-backdrop-filter: var(--blur);
+      border: 1px solid var(--c-border);
+      border-radius: 20px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+
+    .feature-card:hover {
+      border-color: rgba(255, 255, 255, 0.25);
+      transform: translateY(-3px);
+    }
+
+    .feat-icon-box {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .feat-icon-box.blue   { background: rgba(47, 129, 247, 0.2); color: var(--c-blue); }
+    .feat-icon-box.gold   { background: rgba(255, 184, 0, 0.2); color: var(--c-gold); }
+    .feat-icon-box.green  { background: rgba(63, 185, 80, 0.2); color: var(--c-green); }
+    .feat-icon-box.purple { background: rgba(188, 140, 255, 0.2); color: #d2a8ff; }
+
+    .feat-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .feat-desc {
+      font-size: 13px;
+      color: var(--c-muted);
+      line-height: 1.6;
+    }
+
+    /* ── ADIM REHBERİ ── */
+    .steps-card {
+      background: var(--c-surface);
+      backdrop-filter: var(--blur);
+      -webkit-backdrop-filter: var(--blur);
+      border: 1px solid var(--c-border);
+      border-radius: 24px;
+      padding: 28px 24px;
+    }
+
+    .steps-card h3 {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #fff;
+    }
+
+    .steps-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+    }
+
+    .step-item {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .step-num {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--c-blue);
+      font-size: 13px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .step-text {
+      font-size: 13px;
+      color: var(--c-muted);
+      line-height: 1.5;
+    }
+
+    .step-text b {
+      color: var(--c-text);
+    }
+
+    /* ── FOOTER ── */
+    .portal-footer {
+      text-align: center;
+      font-size: 12px;
+      color: var(--c-muted);
+      padding: 10px 0;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bg-glow-1"></div>
+  <div class="bg-glow-2"></div>
+
+  <div class="portal-container">
+
+    <!-- ══ HERO BÖLÜMÜ ══ -->
+    <div class="hero-card">
+      <div class="badge-pill">
+        <i class="fa-solid fa-shield-halved"></i> Anti-Drift & Akıllı Koordinat Hedefleme
+      </div>
+
+      <div class="hero-icon-orbit">
+        <i class="fa-solid fa-satellite-dish"></i>
+      </div>
+
+      <h1 class="hero-title">Uydu GPS Pro</h1>
+
+      <p class="hero-subtitle">
+        Cihazınız sabitken meydana gelen GPS sapmalarını sıfırlayan <b>Anti-Drift Kalman Filtresi</b>, 
+        yaklaştıkça hızlanan <b>sonar bip sesi</b>, "Sola dön 10 adım yürü" şeklinde <b>canlı adım kılavuzu ve Türkçe sesli asistan</b> ve 
+        dağlık/kırsal araziler için <b>8 ultra net uydu haritası</b>.
+      </p>
+
+      <!-- UYDU SAYFASINA GİT BUTONU -->
+      <a href="app.html" class="cta-btn" id="startAppBtn">
+        <i class="fa-solid fa-satellite"></i>
+        <span>Uydu Sayfasına Git</span>
+        <i class="fa-solid fa-arrow-right" style="font-size: 14px; margin-left: 4px;"></i>
+      </a>
+    </div>
+
+    <!-- ══ CİHAZ VE SİSTEM HAZIRLIK DURUMU ══ -->
+    <div class="system-status-grid">
+      <div class="status-card">
+        <div class="status-icon"><i class="fa-solid fa-location-crosshairs"></i></div>
+        <div class="status-info">
+          <div class="status-name">GPS Servisi</div>
+          <div class="status-val" id="gpsSupportText">Algılandı ✅</div>
+        </div>
+      </div>
+
+      <div class="status-card">
+        <div class="status-icon"><i class="fa-solid fa-compass"></i></div>
+        <div class="status-info">
+          <div class="status-name">Pusula Sensörü</div>
+          <div class="status-val" id="compassSupportText">Destekleniyor ✅</div>
+        </div>
+      </div>
+
+      <div class="status-card">
+        <div class="status-icon"><i class="fa-solid fa-volume-high"></i></div>
+        <div class="status-info">
+          <div class="status-name">Ses İkazı</div>
+          <div class="status-val">Web Audio Aktif ✅</div>
+        </div>
+      </div>
+
+      <div class="status-card">
+        <div class="status-icon"><i class="fa-solid fa-mobile-screen"></i></div>
+        <div class="status-info">
+          <div class="status-name">Cihaz Uyumu</div>
+          <div class="status-val">PC & Mobil Hazır ✅</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 4 TEMEL ÖZELLİK ══ -->
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feat-icon-box green">
+          <i class="fa-solid fa-shield-halved"></i>
+        </div>
+        <div class="feat-title">Anti-Drift Sapma Engelleyici</div>
+        <div class="feat-desc">
+          Telefonunuz masada veya elinizde sabit dururken uydulardan kaynaklanan titreme ve zıplamaları 
+          akıllı Kalman filtresi ve durağan kilit ile filtreler.
+        </div>
+      </div>
+
+      <div class="feature-card">
+        <div class="feat-icon-box gold">
+          <i class="fa-solid fa-bullseye"></i>
+        </div>
+        <div class="feat-title">Akıllı Adım & Sesli Rehber</div>
+        <div class="feat-desc">
+          "Sola dön 10 adım yürü" veya "Arkana dön" gibi anlık metin ve Türkçe sesli yönlendirme; hedefe yaklaştıkça sıklaşan sonar bip sesi ve tam üzerine ulaşıldığında onay melodisi.
+        </div>
+      </div>
+
+      <div class="feature-card">
+        <div class="feat-icon-box blue">
+          <i class="fa-solid fa-layer-group"></i>
+        </div>
+        <div class="feat-title">8 Ultra Net Uydu & Arazi Haritası</div>
+        <div class="feat-desc">
+          Google Uydu (Maxar 30cm HD), Esri Clarity (bulutsuz/kristal), Yandex Uydu, OpenTopoMap (eş yükselti izohipsleri) ve 3B kabartma dahil 8 harita katmanı.
+        </div>
+      </div>
+
+      <div class="feature-card">
+        <div class="feat-icon-box purple">
+          <i class="fa-solid fa-image"></i>
+        </div>
+        <div class="feat-title">Resim Hizalama & Çizim</div>
+        <div class="feat-desc">
+          Cihazınızdaki uydu ve parsel fotoğraflarını 4 köşe perspektif eşleme ile sabitleyin, 
+          vektörel çizimler yapın ve <b>.ugpspro</b> dosyasıyla yedekleyin.
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ HIZLI ADIMLAR ══ -->
+    <div class="steps-card">
+      <h3><i class="fa-solid fa-circle-info" style="color:var(--c-blue)"></i> Nasıl Başlanır?</h3>
+      <div class="steps-row">
+        <div class="step-item">
+          <div class="step-num">1</div>
+          <div class="step-text"><b>Uydu Sayfasına Geçin:</b> Yukarıdaki mavi butona basarak haritayı başlatın.</div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">2</div>
+          <div class="step-text"><b>Konum İzni Verin:</b> Canlı GPS ve pusula yönünüzün haritaya yansımasına izin verin.</div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">3</div>
+          <div class="step-text"><b>Hedef Belirleyin:</b> Hedef koordinatı girin veya fotoğraf yükleyip hizalayın.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ ALT BİLGİ ══ -->
+    <div class="portal-footer">
+      <div>🛰️ <b>Uydu GPS Pro v2.5</b> • Bilgisayar, Tablet ve Mobil Uyumlu</div>
+      <div style="margin-top: 4px; opacity: 0.7;">Tüm veriler cihazınızda yerel IndexedDB'de saklanır, harici sunucuya veri aktarılmaz.</div>
+    </div>
+
+  </div>
+
+  <script>
+    // Sensör kontrolleri
+    if (!('geolocation' in navigator)) {
+      document.getElementById('gpsSupportText').textContent = 'Desteklenmiyor ❌';
+      document.getElementById('gpsSupportText').style.color = 'var(--c-red)';
+    }
+
+    if (!('DeviceOrientationEvent' in window)) {
+      document.getElementById('compassSupportText').textContent = 'Sensör Yok (Yedek Mod)';
+      document.getElementById('compassSupportText').style.color = 'var(--c-orange)';
+    }
+  </script>
+</body>
+</html>
